@@ -1,0 +1,13 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+aw-core = {editable = true, git = "https://github.com/ActivityWatch/aw-core.git"}
+tabulate = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7"
