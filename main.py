@@ -6,6 +6,7 @@ import json
 from tabulate import tabulate
 
 from aw_core.models import Event
+import aw_client
 
 
 def parse(filepath):
@@ -33,20 +34,22 @@ def import_as_bucket(filepath):
     end = max(e.timestamp + e.duration for e in events)
     bucket = {
         'id': f'smartertime_export_{end.date()}_{secrets.token_hex(4)}',
-        'events': events,
+        'created': datetime.now(),
+        'event_type': 'smartertime.v0',
+        'client': '',
+        'hostname': '',
         'data': {
             'readonly': True,
-        }
+        },
+        'events': events,
     }
     return bucket
 
 
 def print_info(bucket):
     events = bucket['events']
-    print(bucket['id'])
-    print(bucket['data'])
     rows = []
-    for a in ['Messenger', 'Plex', 'YouTube', 'Firefox', 'reddit', 'call:']:
+    for a in ['Messenger', 'Plex', 'YouTube', 'Firefox', 'reddit', 'call:', 'Anki', 'Duolingo', 'HelloChinese', 'Notes', 'Gmail', 'Sheets', 'Docs', 'Spotify']:
         rows.append([a, sum((e.duration for e in events if a in e.data['activity']), timedelta(0))])
     print(tabulate(rows, ['title', 'time']))
 
@@ -61,11 +64,20 @@ def default(o):
 
 
 def save_bucket(bucket):
-    with open(bucket['id'] + ".awbucket.json", 'w') as f:
+    filename = bucket['id'] + ".awbucket.json"
+    with open(filename, 'w') as f:
         json.dump(bucket, f, indent=True, default=default)
+    print(f"Saved as {filename}")
+
+
+def import_to_awserver(bucket):
+    awc = aw_client.ActivityWatchClient('smartertime2activitywatch', testing=True)
+    buckets = json.loads(json.dumps({"buckets": [bucket]}, default=default))
+    awc._post('import', buckets)
 
 
 if __name__ == '__main__':
     bucket = import_as_bucket('timeslots.csv')
     save_bucket(bucket)
+    import_to_awserver(bucket)
     print_info(bucket)

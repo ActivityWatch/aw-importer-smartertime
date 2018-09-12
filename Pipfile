@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 aw-core = {editable = true, git = "https://github.com/ActivityWatch/aw-core.git"}
 tabulate = "*"
+aw-client = {editable = true, git = "https://github.com/ActivityWatch/aw-client.git"}
 
 [dev-packages]
 
